@@ -1,0 +1,17 @@
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/bin/Debug/net9.0/ETZ.Infrastructure.deps.json
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/bin/Debug/net9.0/ETZ.Infrastructure.dll
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/bin/Debug/net9.0/ETZ.Infrastructure.pdb
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/bin/Debug/net9.0/ETZ.Application.dll
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/bin/Debug/net9.0/ETZ.Domain.dll
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/bin/Debug/net9.0/ETZ.Application.pdb
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/bin/Debug/net9.0/ETZ.Domain.pdb
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/obj/Debug/net9.0/ETZ.Infrastructure.csproj.AssemblyReference.cache
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/obj/Debug/net9.0/ETZ.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/obj/Debug/net9.0/ETZ.Infrastructure.AssemblyInfoInputs.cache
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/obj/Debug/net9.0/ETZ.Infrastructure.AssemblyInfo.cs
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/obj/Debug/net9.0/ETZ.Infrastructure.csproj.CoreCompileInputs.cache
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/obj/Debug/net9.0/ETZ.Infr.2C7E99FF.Up2Date
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/obj/Debug/net9.0/ETZ.Infrastructure.dll
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/obj/Debug/net9.0/refint/ETZ.Infrastructure.dll
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/obj/Debug/net9.0/ETZ.Infrastructure.pdb
+/Users/emir/Projects/ETZ_Backend/src/ETZ.Infrastructure/obj/Debug/net9.0/ref/ETZ.Infrastructure.dll
