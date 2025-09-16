@@ -1,0 +1,25 @@
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+**/Debug/
+**/Release/
+*.cache
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# OS
+.DS_Store
+
+# Env/Secrets
+*.env
+secrets.json
+
+# Optional: local settings
+# src/**/appsettings.Development.json
