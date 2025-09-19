@@ -1,8 +1,8 @@
 namespace ETZ.Domain.Entities.Auditing;
 
-public abstract class FullAuditedEntity<TKey> 
+public abstract class FullAuditedEntity<TKey>
 {
-    public required TKey Id {get; set;}
+    public TKey Id { get; set; }
     public bool IsDeleted { get; set; } = false;
     public Guid CreatorUserId { get; set; }
     public DateTimeOffset CreationTime { get; set; } 

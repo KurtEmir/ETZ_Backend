@@ -9,7 +9,7 @@ public class Sponsor : FullAuditedEntity<Guid>
     public string Name { get; set; } = null!;
     public string SponsorLogoUrl { get; set; } = null!;
     public int DisplayOrder { get; set; }
-    public required SponsorType SponsorType { get; set; }
+    public SponsorType SponsorType { get; set; } = null!;
     public int SponsorTypeId {get; set;}
 }
 

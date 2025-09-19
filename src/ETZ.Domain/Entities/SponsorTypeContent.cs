@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 public class SponsorTypeContent : FullAuditedEntity<int>
 {
-    public required string Name {get; set;}
+    public string Name {get; set;} = null!;
     public LanguageCode LanguageCode {get; set;}
     public int SponsorTypeId {get; set;}
     public SponsorType SponsorType {get; set;} = null!;
@@ -26,5 +26,7 @@ public class SponsorTypeContentConfiguration : IEntityTypeConfiguration<SponsorT
          .HasConversion<string>()
          .HasMaxLength(2)
          .IsRequired();
+
+         builder.HasKey(x => x.Id);
     }
 }
