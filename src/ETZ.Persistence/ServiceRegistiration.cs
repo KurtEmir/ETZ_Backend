@@ -10,8 +10,8 @@ public static class ServiceRegistiration
     {
         services.AddScoped<SponsorService>();
         // services.AddScoped<SponsorTypeService>();
-        // services.AddScoped<SpeakerService>();
-        // services.AddScoped<TopicService>();
+        services.AddScoped<SpeakerService>();
+        services.AddScoped<TopicService>();
         // services.AddScoped<MaterialService>();
         // services.AddScoped<MaterialPlacementService>();
     }

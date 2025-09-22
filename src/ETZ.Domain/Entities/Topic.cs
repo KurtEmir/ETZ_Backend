@@ -5,9 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 public class Topic : FullAuditedEntity<Guid>
-{
+{   
     public int DisplayOrder { get; set; }
-    public ICollection<TopicContent> TopicContents { get; set; } = new List<TopicContent>();
+    public string TopicName { get; set; } = null!;
+    public LanguageCode LanguageCode { get; set; }
 }
 
 public class TopicConfiguration : IEntityTypeConfiguration<Topic>
@@ -15,9 +16,9 @@ public class TopicConfiguration : IEntityTypeConfiguration<Topic>
     public void Configure(EntityTypeBuilder<Topic> builder)
     {
         builder.ToTable("Topics");
-        builder.HasMany(e => e.TopicContents)
-        .WithOne(e => e.Topic)
-        .HasForeignKey(e => e.TopicId)
-        .OnDelete(DeleteBehavior.Cascade); //TODO araştır bu cascade'i
+        builder.Property(e => e.TopicName).HasMaxLength(255).IsRequired();
+        builder.Property(e => e.LanguageCode).HasConversion<string>()
+        .HasMaxLength(2)
+        .IsRequired();
     }
 }

@@ -17,7 +17,6 @@ public class ETZDbContext : DbContext
     public DbSet<Speaker> Speakers {get; set;}
     public DbSet<SpeakerContent> SpeakerContents {get; set;}
     public DbSet<Topic> Topics {get; set;}
-    public DbSet<TopicContent> TopicContents {get; set;}
     public DbSet<Material> Materials {get; set;}
     public DbSet<MaterialContent> MaterialContents {get; set;}
     public DbSet<MaterialPlacement> MaterialPlacements {get; set;}
