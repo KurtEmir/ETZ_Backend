@@ -1,12 +1,12 @@
 # Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:9.0.2 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 # Render, container'ın $PORT'unda dinlemeni bekler
 ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT}
 EXPOSE 8080
 
 # Build
-FROM mcr.microsoft.com/dotnet/sdk:9.0.2 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 COPY ./src/ETZ.Api/ETZ.Api.csproj ./src/ETZ.Api/
 COPY ./src/ETZ.Persistence/ETZ.Persistence.csproj ./src/ETZ.Persistence/
