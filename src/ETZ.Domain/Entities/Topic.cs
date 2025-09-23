@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 public class Topic : FullAuditedEntity<Guid>
 {   
-    public int DisplayOrder { get; set; }
     public string TopicName { get; set; } = null!;
+    public int DisplayOrder { get; set; }
     public LanguageCode LanguageCode { get; set; }
 }
 

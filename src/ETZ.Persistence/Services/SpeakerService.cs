@@ -29,6 +29,9 @@ public sealed class SpeakerService
         if (string.IsNullOrWhiteSpace(dto.Name) || string.IsNullOrWhiteSpace(dto.Surname))
             return Response.Fail("Name and Surname are required");
 
+        if (dto.Translations is null || dto.Translations.Count == 0)
+            return Response.Fail("At least one translation is required");
+
         var speaker = new Speaker
         {
             Id = Guid.NewGuid(),
@@ -41,6 +44,21 @@ public sealed class SpeakerService
         };
 
         await _context.Speakers.AddAsync(speaker);
+
+        foreach (var t in dto.Translations.GroupBy(t => t.LanguageCode).Select(g => g.First()))
+        {
+            var sc = new SpeakerContent
+            {
+                Id = Guid.NewGuid(),
+                SpeakerId = speaker.Id,
+                Title = t.Title,
+                Description = t.Description,
+                LanguageCode = t.LanguageCode,
+                CreationTime = DateTimeOffset.UtcNow,
+                CreatorUserId = Constants.SystemGodUserId
+            };
+            await _context.SpeakerContents.AddAsync(sc);
+        }
         await _context.SaveChangesAsync();
         _logger.LogInformation("Speaker created Id={Id}", speaker.Id);
         return Response.Ok("Speaker created successfully");

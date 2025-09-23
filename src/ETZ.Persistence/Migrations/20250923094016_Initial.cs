@@ -57,12 +57,13 @@ namespace ETZ.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SponsorTypes",
+                name: "Sponsors",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    SponsorCode = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    SponsorLogoUrl = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatorUserId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreationTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -73,7 +74,7 @@ namespace ETZ.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SponsorTypes", x => x.Id);
+                    table.PrimaryKey("PK_Sponsors", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -81,7 +82,9 @@ namespace ETZ.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TopicName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    LanguageCode = table.Column<string>(type: "character varying(2)", maxLength: 2, nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatorUserId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreationTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -178,42 +181,14 @@ namespace ETZ.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Sponsors",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    SponsorLogoUrl = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: false),
-                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
-                    SponsorTypeId = table.Column<int>(type: "integer", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatorUserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreationTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    DeleterUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletionTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    LastModifierUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    LastModificationTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Sponsors", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Sponsors_SponsorTypes_SponsorTypeId",
-                        column: x => x.SponsorTypeId,
-                        principalTable: "SponsorTypes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SponsorTypeContents",
+                name: "SponsorTypes",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    SponsorId = table.Column<Guid>(type: "uuid", nullable: false),
                     LanguageCode = table.Column<string>(type: "character varying(2)", maxLength: 2, nullable: false),
-                    SponsorTypeId = table.Column<int>(type: "integer", nullable: false),
+                    Type = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreatorUserId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreationTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -224,39 +199,11 @@ namespace ETZ.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SponsorTypeContents", x => x.Id);
+                    table.PrimaryKey("PK_SponsorTypes", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SponsorTypeContents_SponsorTypes_SponsorTypeId",
-                        column: x => x.SponsorTypeId,
-                        principalTable: "SponsorTypes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TopicContents",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    TopicId = table.Column<Guid>(type: "uuid", nullable: false),
-                    LanguageCode = table.Column<string>(type: "character varying(2)", maxLength: 2, nullable: false),
-                    Title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatorUserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreationTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    DeleterUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletionTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    LastModifierUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    LastModificationTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TopicContents", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TopicContents_Topics_TopicId",
-                        column: x => x.TopicId,
-                        principalTable: "Topics",
+                        name: "FK_SponsorTypes_Sponsors_SponsorId",
+                        column: x => x.SponsorId,
+                        principalTable: "Sponsors",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -293,25 +240,10 @@ namespace ETZ.Persistence.Migrations
                 column: "DisplayOrder");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Sponsors_SponsorTypeId",
-                table: "Sponsors",
-                column: "SponsorTypeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SponsorTypeContents_SponsorTypeId",
-                table: "SponsorTypeContents",
-                column: "SponsorTypeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SponsorTypes_SponsorCode",
+                name: "IX_SponsorTypes_SponsorId_LanguageCode",
                 table: "SponsorTypes",
-                column: "SponsorCode",
+                columns: new[] { "SponsorId", "LanguageCode" },
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TopicContents_TopicId",
-                table: "TopicContents",
-                column: "TopicId");
         }
 
         /// <inheritdoc />
@@ -327,13 +259,10 @@ namespace ETZ.Persistence.Migrations
                 name: "SpeakerContents");
 
             migrationBuilder.DropTable(
-                name: "Sponsors");
+                name: "SponsorTypes");
 
             migrationBuilder.DropTable(
-                name: "SponsorTypeContents");
-
-            migrationBuilder.DropTable(
-                name: "TopicContents");
+                name: "Topics");
 
             migrationBuilder.DropTable(
                 name: "Materials");
@@ -342,10 +271,7 @@ namespace ETZ.Persistence.Migrations
                 name: "Speakers");
 
             migrationBuilder.DropTable(
-                name: "SponsorTypes");
-
-            migrationBuilder.DropTable(
-                name: "Topics");
+                name: "Sponsors");
         }
     }
 }

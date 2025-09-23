@@ -13,7 +13,6 @@ public class ETZDbContext : DbContext
     }
     public DbSet<Sponsor> Sponsors {get; set;}
     public DbSet<SponsorType> SponsorTypes {get; set;}
-    public DbSet<SponsorTypeContent> SponsorTypeContents {get; set;}
     public DbSet<Speaker> Speakers {get; set;}
     public DbSet<SpeakerContent> SpeakerContents {get; set;}
     public DbSet<Topic> Topics {get; set;}

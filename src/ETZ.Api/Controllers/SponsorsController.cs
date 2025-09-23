@@ -49,27 +49,9 @@ public class SponsorsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("sponsor-type")]
-    public async Task<ActionResult<Response>> CreateSponsorType([FromBody] CreateSponsorTypeDto sponsorTypeDto)
-    {
-        var result = await _sponsorService.CreateSponsorType(sponsorTypeDto);
-        if (!result.Success)
-        {
-            return BadRequest(result.Message);
-        }
-        return Ok(result);
-    }
 
-    [HttpPost("sponsor-type-content")]
-    public async Task<ActionResult<Response>> CreateSponsorTypeContent([FromBody] CreateSponsorTypeContentDto sponsorTypeContentDto)
-    {
-        var result = await _sponsorService.CreateSponsorTypeContent(sponsorTypeContentDto);
-        if (!result.Success)
-        {
-            return BadRequest(result.Message);
-        }
-        return Ok(result);
-    }
+
+    
 
 
 

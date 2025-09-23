@@ -307,14 +307,9 @@ namespace ETZ.Persistence.Migrations
                         .HasMaxLength(2048)
                         .HasColumnType("character varying(2048)");
 
-                    b.Property<int>("SponsorTypeId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DisplayOrder");
-
-                    b.HasIndex("SponsorTypeId");
 
                     b.ToTable("Sponsors", (string)null);
                 });
@@ -342,48 +337,6 @@ namespace ETZ.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset?>("LastModificationTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("LastModifierUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("SponsorCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SponsorCode")
-                        .IsUnique();
-
-                    b.ToTable("SponsorTypes", (string)null);
-                });
-
-            modelBuilder.Entity("ETZ.Domain.Entities.SponsorTypeContent", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTimeOffset>("CreationTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatorUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("DeleterUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("DeletionTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("LanguageCode")
                         .IsRequired()
                         .HasMaxLength(2)
@@ -395,19 +348,20 @@ namespace ETZ.Persistence.Migrations
                     b.Property<Guid?>("LastModifierUserId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Name")
+                    b.Property<Guid>("SponsorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
-                    b.Property<int>("SponsorTypeId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("SponsorTypeId");
+                    b.HasIndex("SponsorId", "LanguageCode")
+                        .IsUnique();
 
-                    b.ToTable("SponsorTypeContents", (string)null);
+                    b.ToTable("SponsorTypes", (string)null);
                 });
 
             modelBuilder.Entity("ETZ.Domain.Entities.Topic", b =>
@@ -434,41 +388,6 @@ namespace ETZ.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset?>("LastModificationTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("LastModifierUserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Topics", (string)null);
-                });
-
-            modelBuilder.Entity("ETZ.Domain.Entities.TopicContent", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreationTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CreatorUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("DeleterUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset?>("DeletionTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("LanguageCode")
                         .IsRequired()
                         .HasMaxLength(2)
@@ -480,19 +399,14 @@ namespace ETZ.Persistence.Migrations
                     b.Property<Guid?>("LastModifierUserId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Title")
+                    b.Property<string>("TopicName")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<Guid>("TopicId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("TopicId");
-
-                    b.ToTable("TopicContents", (string)null);
+                    b.ToTable("Topics", (string)null);
                 });
 
             modelBuilder.Entity("ETZ.Domain.Entities.MaterialContent", b =>
@@ -528,37 +442,15 @@ namespace ETZ.Persistence.Migrations
                     b.Navigation("Speaker");
                 });
 
-            modelBuilder.Entity("ETZ.Domain.Entities.Sponsor", b =>
+            modelBuilder.Entity("ETZ.Domain.Entities.SponsorType", b =>
                 {
-                    b.HasOne("ETZ.Domain.Entities.SponsorType", "SponsorType")
-                        .WithMany("Sponsors")
-                        .HasForeignKey("SponsorTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("SponsorType");
-                });
-
-            modelBuilder.Entity("ETZ.Domain.Entities.SponsorTypeContent", b =>
-                {
-                    b.HasOne("ETZ.Domain.Entities.SponsorType", "SponsorType")
-                        .WithMany("SponsorTypeContent")
-                        .HasForeignKey("SponsorTypeId")
+                    b.HasOne("ETZ.Domain.Entities.Sponsor", "Sponsor")
+                        .WithMany("SponsorTypes")
+                        .HasForeignKey("SponsorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("SponsorType");
-                });
-
-            modelBuilder.Entity("ETZ.Domain.Entities.TopicContent", b =>
-                {
-                    b.HasOne("ETZ.Domain.Entities.Topic", "Topic")
-                        .WithMany("TopicContents")
-                        .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Topic");
+                    b.Navigation("Sponsor");
                 });
 
             modelBuilder.Entity("ETZ.Domain.Entities.Material", b =>
@@ -573,16 +465,9 @@ namespace ETZ.Persistence.Migrations
                     b.Navigation("SpeakerContent");
                 });
 
-            modelBuilder.Entity("ETZ.Domain.Entities.SponsorType", b =>
+            modelBuilder.Entity("ETZ.Domain.Entities.Sponsor", b =>
                 {
-                    b.Navigation("SponsorTypeContent");
-
-                    b.Navigation("Sponsors");
-                });
-
-            modelBuilder.Entity("ETZ.Domain.Entities.Topic", b =>
-                {
-                    b.Navigation("TopicContents");
+                    b.Navigation("SponsorTypes");
                 });
 #pragma warning restore 612, 618
         }

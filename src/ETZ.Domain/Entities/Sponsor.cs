@@ -9,8 +9,7 @@ public class Sponsor : FullAuditedEntity<Guid>
     public string Name { get; set; } = null!;
     public string SponsorLogoUrl { get; set; } = null!;
     public int DisplayOrder { get; set; }
-    public SponsorType SponsorType { get; set; } = null!;
-    public int SponsorTypeId {get; set;}
+    public ICollection<SponsorType> SponsorTypes { get; set; } = new List<SponsorType>();
 }
 
 public class SponsorConfiguration : IEntityTypeConfiguration<Sponsor>
@@ -21,10 +20,6 @@ public class SponsorConfiguration : IEntityTypeConfiguration<Sponsor>
         builder.Property(e => e.Name).HasMaxLength(255).IsRequired();
         builder.Property(e => e.SponsorLogoUrl).HasMaxLength(2048).IsRequired();
         builder.HasIndex(e => e.DisplayOrder);
-        builder.HasOne(s => s.SponsorType)
-        .WithMany(t => t.Sponsors) 
-        .HasForeignKey(s => s.SponsorTypeId)
-        .OnDelete(DeleteBehavior.Restrict); //TODO araştır bu restrict'i
     }   
 }
 

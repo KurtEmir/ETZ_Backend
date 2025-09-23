@@ -5,10 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 public class SponsorType : FullAuditedEntity<int>
-{
-    public string SponsorCode {get; set;} = null!; // sponsor türünün ismi olcak kod gibi çağrışım yapsın diye yani
-    public ICollection<SponsorTypeContent> SponsorTypeContent {get; set;} = new List<SponsorTypeContent>();
-    public ICollection<Sponsor> Sponsors {get; set;} = new List<Sponsor>();
+{ 
+    public Guid SponsorId { get; set; }
+    public Sponsor Sponsor { get; set; } = null!;
+    public LanguageCode LanguageCode { get; set; }
+    public string Type { get; set; } = string.Empty;
 }
 
 public class SponsorTypeConfiguration : IEntityTypeConfiguration<SponsorType>
@@ -16,15 +17,22 @@ public class SponsorTypeConfiguration : IEntityTypeConfiguration<SponsorType>
     public void Configure(EntityTypeBuilder<SponsorType> builder)
     {
         builder.ToTable("SponsorTypes");
-        
-        builder.HasIndex(e => e.SponsorCode).IsUnique(true);
-        builder.Property(e => e.SponsorCode)
-        .HasMaxLength(50)
-        .IsRequired(true);
+        builder.HasKey(x => x.Id);
 
-        builder.HasMany(e => e.SponsorTypeContent)
-        .WithOne(e => e.SponsorType)
-        .HasForeignKey(e => e.SponsorTypeId)
-        .OnDelete(DeleteBehavior.Cascade);
+        builder.Property(x => x.Type)
+            .HasMaxLength(150)
+            .IsRequired();
+
+        builder.Property(x => x.LanguageCode)
+            .HasConversion<string>()
+            .HasMaxLength(2)
+            .IsRequired();
+
+        builder.HasOne(x => x.Sponsor)
+            .WithMany(s => s.SponsorTypes)
+            .HasForeignKey(x => x.SponsorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(x => new { x.SponsorId, x.LanguageCode}).IsUnique();
     }
 }
