@@ -5,7 +5,6 @@ using ETZ.Persistence.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ETZ.Api.Controllers;
-//TODO - Aynı display order sayısına sahip birden fazla konuşmacı ekleyebiliyorum bu problemi düzelteceğiz.
 [ApiController]
 [Route("api/speakers")]
 public sealed class SpeakersController : ControllerBase
@@ -37,7 +36,7 @@ public sealed class SpeakersController : ControllerBase
     }
 
     
-    [HttpPost("speaker")]
+    [HttpPost]
     public async Task<ActionResult<Response>> Create([FromBody] SpeakerCreateUpdateDto dto)
     {
         var result = await _speakerService.CreateAsync(dto);

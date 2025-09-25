@@ -32,6 +32,13 @@ public sealed class SpeakerService
         if (dto.Translations is null || dto.Translations.Count == 0)
             return Response.Fail("At least one translation is required");
 
+        if (dto.SpeakerPhotoUrl is null)
+            return Response.Fail("SpeakerPhotoUrl is required");
+
+        var orderExisting = await _context.Speakers.AnyAsync(x => x.DisplayOrder == dto.DisplayOrder);
+        if (orderExisting)
+            return Response.Fail("DisplayOrder already exists");
+
         var speaker = new Speaker
         {
             Id = Guid.NewGuid(),

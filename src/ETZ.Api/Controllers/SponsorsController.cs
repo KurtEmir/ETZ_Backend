@@ -38,7 +38,7 @@ public class SponsorsController : ControllerBase
         return Ok(sponsors); 
     }
 
-    [HttpPost("sponsor")]
+    [HttpPost]
     public async Task<ActionResult<Response>> CreateSponsor([FromBody] SponsorCreateUpdateDto sponsorCreateUpdateDto)
     {
         var result = await _sponsorService.CreateSponsorAsync(sponsorCreateUpdateDto);

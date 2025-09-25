@@ -5,7 +5,6 @@ using ETZ.Application;
 using ETZ.Application.DTOs.Material;
 
 namespace ETZ.Api.Controllers;
-// TODO - Materials eklerken material content'i aynı anda hem türkçe hem ingilizce ekleyebilmeliyim
 [ApiController]
 [Route("api/materials")]
 public class MaterialController : ControllerBase

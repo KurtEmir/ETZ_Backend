@@ -16,5 +16,4 @@ public sealed class ETZDbContextFactory : IDesignTimeDbContextFactory<ETZDbConte
     }
 }
 
-// TODO - ServiceRegistiration yapılacak aynı CertifiX de olduğu gibi, => servisler yazıldıktan sonra
 
