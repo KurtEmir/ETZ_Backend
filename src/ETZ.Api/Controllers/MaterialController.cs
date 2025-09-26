@@ -46,4 +46,15 @@ public class MaterialController : ControllerBase
         return Ok(result);
     }
     
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult<Response>> Delete(Guid id)
+    {
+        var result = await _materialService.DeleteAsync(id);
+        if (!result.Success)
+        {
+            return BadRequest(result.Message);
+        }
+        return Ok(result);
+    }
+    
 }

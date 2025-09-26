@@ -50,6 +50,18 @@ public class SponsorsController : ControllerBase
     }
 
 
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult<Response>> DeleteSponsor(Guid id)
+    {
+        var result = await _sponsorService.DeleteSponsorAsync(id);
+        if (!result.Success)
+        {
+            return NotFound(result.Message);
+        }
+        return Ok(result);
+    }
+
+
 
     
 

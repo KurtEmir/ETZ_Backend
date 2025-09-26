@@ -58,6 +58,17 @@ public sealed class SpeakersController : ControllerBase
         return Ok(result);
     }
 
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult<Response>> DeleteSpeaker(Guid id)
+    {
+        var result = await _speakerService.DeleteSpeakerAsync(id);
+        if (!result.Success)
+        {
+            return NotFound(result.Message);
+        }
+        return Ok(result);
+    }
+
 }
 
 

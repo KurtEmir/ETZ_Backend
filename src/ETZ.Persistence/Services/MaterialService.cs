@@ -112,6 +112,7 @@ public sealed class MaterialService
             .OrderBy(m => m.DisplayOrder)
             .Select(m => new MaterialInformationDto
             {
+                Id = m.Id,
                 MaterialName = m.MaterialName ?? string.Empty,
                 MaterialUrl = m.MaterialUrl,
                 MaterialType = m.MaterialType.ToString(),
@@ -121,6 +122,33 @@ public sealed class MaterialService
                 DisplayOrder = m.DisplayOrder
             })
             .ToListAsync();
+    }
+
+    public async Task<Response> DeleteAsync(Guid id)
+    {
+        var material = await _context.Materials.FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
+        if (material is null) return Response.Fail("Material not found");
+
+        material.IsDeleted = true;
+        material.DeleterUserId = Constants.SystemGodUserId;
+        material.DeletionTime = DateTimeOffset.UtcNow;
+
+        // child records soft delete
+        await _context.MaterialContents.Where(c => c.MaterialId == id && !c.IsDeleted)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(c => c.IsDeleted, true)
+                .SetProperty(c => c.DeletionTime, DateTimeOffset.UtcNow)
+                .SetProperty(c => c.DeleterUserId, Constants.SystemGodUserId));
+
+        await _context.MaterialPlacements.Where(p => p.MaterialId == id && !p.IsDeleted)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(p => p.IsDeleted, true)
+                .SetProperty(p => p.DeletionTime, DateTimeOffset.UtcNow)
+                .SetProperty(p => p.DeleterUserId, Constants.SystemGodUserId));
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Material deleted Id={Id}", id);
+        return Response.Ok("Material deleted successfully");
     }
 }
 

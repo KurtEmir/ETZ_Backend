@@ -1,0 +1,87 @@
+@page
+@{
+    ViewData["Title"] = "Topics";
+}
+
+<h2 class="mb-4">Topics</h2>
+
+<div class="card-dark mb-3">
+    <div class="row g-2 align-items-center">
+        <div class="col-auto">
+            <select id="lang" class="form-select">
+                <option value="TR">TR</option>
+                <option value="EN">EN</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <a class="btn btn-gradient" href="/Topics/Create">Topic Ekle</a>
+        </div>
+    </div>
+</div>
+
+<div class="card-dark">
+    <table class="table table-dark table-striped table-borderless align-middle mb-0">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Order</th>
+                <th>Operation</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyTopics">
+            <tr><td colspan="3">Veri yüklenmedi.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+<script>
+const apiBase = window.ETZ_API_BASE || 'http://localhost:5099';
+const tbody = document.getElementById('tbodyTopics');
+const langSel = document.getElementById('lang');
+langSel.addEventListener('change', load);
+
+async function load() {
+    const lang = langSel.value;
+    tbody.innerHTML = '<tr><td colspan="3">Yükleniyor...</td></tr>';
+    try {
+        const res = await fetch(`${apiBase}/api/topics?languageCode=${lang}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3">Kayıt yok.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.map(t => `
+            <tr>
+                <td>${t.topicName}</td>
+                <td>${t.displayOrder}</td>
+                <td>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-gradient" data-action="edit" data-id="${t.id}">Edit</button>
+                        <button class="btn btn-danger" data-action="delete" data-id="${t.id}">Delete</button>
+                    </div>
+                </td>
+            </tr>`).join('');
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="3">Hata: ${e.message}</td></tr>`;
+    }
+}
+
+tbody.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const action = btn.getAttribute('data-action');
+    const id = btn.getAttribute('data-id');
+    if (action === 'delete') {
+        if (!confirm('Silmek istediğine emin misin?')) return;
+        fetch(`${apiBase}/api/topics/${id}`, { method: 'DELETE' })
+            .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json().catch(() => ({})); })
+            .then(() => load())
+            .catch(err => alert('Silme başarısız: ' + err.message));
+    }
+});
+
+load();
+</script>
+}

@@ -3,6 +3,7 @@ namespace ETZ.Application.DTOs.Material;
 
 public class MaterialInformationDto
 {
+    public Guid Id { get; set; }
     public string MaterialName { get; set; } = null!;
     public string MaterialUrl { get; set; } = null!;
     public string MaterialType { get; set; } = null!;

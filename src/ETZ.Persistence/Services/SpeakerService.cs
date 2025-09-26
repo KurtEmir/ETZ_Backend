@@ -88,19 +88,6 @@ public sealed class SpeakerService
         return Response.Ok("Speaker updated successfully");
     }
 
-    public async Task<Response> DeleteAsync(Guid id)
-    {
-        var entity = await _context.Speakers.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
-        if (entity is null) return Response.Fail("Speaker not found");
-
-        entity.IsDeleted = true;
-        entity.DeleterUserId = Constants.SystemGodUserId;
-        entity.DeletionTime = DateTimeOffset.UtcNow;
-        await _context.SaveChangesAsync();
-        _logger.LogInformation("Speaker deleted Id={Id}", id);
-        return Response.Ok("Speaker deleted successfully");
-    }
-
     public async Task<List<SpeakerInformationDto>> GetSpeakersByLanguage(LanguageCode lang)
     {
         return await _context.Speakers
@@ -109,6 +96,7 @@ public sealed class SpeakerService
         .OrderBy(s => s.DisplayOrder)
         .Select(s => new SpeakerInformationDto
         {
+            Id = s.Id,
             SpeakerName = s.Name,
             SpeakerSurname = s.Surname,
             SpeakerPhotoUrl = s.SpeakerPhotoUrl,
@@ -140,6 +128,19 @@ public sealed class SpeakerService
         await _context.SaveChangesAsync();
         _logger.LogInformation("SpeakerContent created Id={Id}", speakerContent.Id);
         return Response.Ok("SpeakerContent created successfully");
+    }
+
+    public async Task<Response> DeleteSpeakerAsync(Guid id)
+    {
+        var speaker = _context.Speakers.FirstOrDefault(x => x.Id == id && !x.IsDeleted);
+        if (speaker is null) return Response.Fail("Speaker not found");
+
+        speaker.IsDeleted = true;
+        speaker.DeleterUserId = Constants.SystemGodUserId;
+        speaker.DeletionTime = DateTimeOffset.UtcNow;
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Speaker deleted Id={Id}", id);
+        return Response.Ok("Speaker deleted successfully");
     }
 }
 

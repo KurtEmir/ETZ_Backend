@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ETZ.Portal</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ETZ.Portal.styles.css" asp-append-version="true" />
+</head>
+<body class="theme-dark">
+    <header class="gradient-header text-white">
+        <div class="header-bar d-flex align-items-center">
+            <div class="header-left d-flex align-items-center justify-content-center">
+                <img src="https://res.cloudinary.com/dyabnlmas/image/upload/v1754901566/referanslar/etz_lOGO.png" alt="ETZ" class="etz-logo" />
+            </div>
+            <div class="header-right d-flex align-items-center ps-3">
+                <span class="brand-title">ETZ Portal</span>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-md-3 col-lg-2 sidebar bg-dark text-white min-vh-100 p-0">
+                <nav class="list-group list-group-flush sidebar-menu with-separators">
+                    <a class="list-group-item list-group-item-action bg-transparent text-white" asp-page="/Index">
+                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                    </a>
+                    <a class="list-group-item list-group-item-action bg-transparent text-white" asp-page="/Sponsors/Index">
+                        <i class="bi bi-award me-2"></i>Sponsors
+                    </a>
+                    <a class="list-group-item list-group-item-action bg-transparent text-white" asp-page="/Speakers/Index">
+                        <i class="bi bi-person-square me-2"></i>Speakers
+                    </a>
+                    <a class="list-group-item list-group-item-action bg-transparent text-white" asp-page="/Topics/Index">
+                        <i class="bi bi-chat-left-text me-2"></i>Topics
+                    </a>
+                    <a class="list-group-item list-group-item-action bg-transparent text-white" asp-page="/Materials/Index">
+                        <i class="bi bi-collection-play me-2"></i>Materials
+                    </a>
+                </nav>
+            </aside>
+            <main role="main" class="col-12 col-md-9 col-lg-10 p-4 content-surface">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <footer class="footer text-muted">
+        <div class="container">
+            <span class="gradient-text">&copy; @DateTime.UtcNow.Year - ETZ Admin Portal</span>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        window.ETZ_API_BASE = '@(Environment.GetEnvironmentVariable("ETZ_API_BASE") ?? "http://localhost:5099")';
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

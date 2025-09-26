@@ -78,10 +78,23 @@ public sealed class TopicService
             .OrderBy(t => t.DisplayOrder)
             .Select(t => new TopicInformationDto
             {
+                Id = t.Id,
                 TopicName = t.TopicName,
                 DisplayOrder = t.DisplayOrder
             })
             .ToListAsync();
+    }
+
+    public async Task<Response> DeleteAsync(Guid id)
+    {
+        var topic = _context.Topics.FirstOrDefault(x => x.Id == id && !x.IsDeleted);
+        if (topic is null) return Response.Fail("Topic not found");
+        topic.IsDeleted = true;
+        topic.DeleterUserId = Constants.SystemGodUserId;
+        topic.DeletionTime = DateTimeOffset.UtcNow;
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Topic deleted Id={Id}", id);
+        return Response.Ok("Topic deleted successfully");
     }
 }
 

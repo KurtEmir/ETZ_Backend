@@ -1,0 +1,101 @@
+@page
+@{
+    ViewData["Title"] = "Material Ekle";
+}
+
+<h2 class="mb-4 text-center gradient-text">Material Ekle</h2>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <div class="card-dark">
+            <h5 class="mb-3">Genel Bilgiler</h5>
+            <form id="createForm" class="text-white">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Material Name (optional)</label>
+                        <input class="form-control" id="name" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Material Url</label>
+                        <input class="form-control" id="url" placeholder="https://..." required />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Type</label>
+                        <select id="type" class="form-select">
+                            <option value="Video">Video</option>
+                            <option value="Document">Document</option>
+                            <option value="Image">Image</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Placement Code</label>
+                        <input class="form-control" id="placement" required />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Display Order</label>
+                        <input class="form-control" id="order" type="number" value="0" />
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-2">
+                    <div class="col-12 col-md-6">
+                        <div class="card-dark">
+                            <h6 class="mb-3">Türkçe</h6>
+                            <label class="form-label">Title</label>
+                            <input class="form-control" id="titleTr" placeholder="Başlık (TR)" />
+                            <label class="form-label mt-2">Description</label>
+                            <textarea class="form-control" id="descTr" rows="3" placeholder="Açıklama (TR)"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="card-dark">
+                            <h6 class="mb-3">English</h6>
+                            <label class="form-label">Title</label>
+                            <input class="form-control" id="titleEn" placeholder="Title (EN)" />
+                            <label class="form-label mt-2">Description</label>
+                            <textarea class="form-control" id="descEn" rows="3" placeholder="Description (EN)"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button class="btn btn-gradient" type="submit">Kaydet</button>
+                    <a class="btn btn-secondary" asp-page="/Materials/Index">Vazgeç</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const apiBase = window.ETZ_API_BASE || 'http://localhost:5099';
+const form = document.getElementById('createForm');
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+        materialName: document.getElementById('name').value.trim() || null,
+        materialUrl: document.getElementById('url').value.trim(),
+        materialType: document.getElementById('type').value,
+        placementCode: document.getElementById('placement').value.trim(),
+        displayOrder: Number(document.getElementById('order').value || 0),
+        translations: [
+            { languageCode: 'TR', title: document.getElementById('titleTr').value.trim(), description: document.getElementById('descTr').value.trim() },
+            { languageCode: 'EN', title: document.getElementById('titleEn').value.trim(), description: document.getElementById('descEn').value.trim() }
+        ]
+    };
+    try {
+        const res = await fetch(`${apiBase}/api/materials`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        window.location.href = '/Materials/Index';
+    } catch (err) {
+        alert('Kaydetme başarısız: ' + err.message);
+    }
+});
+</script>
+}

@@ -10,12 +10,12 @@ namespace ETZ.Api.Controllers;
 [Route("api/topics")]
 public sealed class TopicsController : ControllerBase
 {
-    private readonly TopicService _service;
+    private readonly TopicService _topicService;
     private readonly ILogger<TopicsController> _logger;
 
-    public TopicsController(TopicService service, ILogger<TopicsController> logger)
+    public TopicsController(TopicService topicService, ILogger<TopicsController> logger)
     {
-        _service = service;
+        _topicService = topicService;
         _logger = logger;
     }
 
@@ -27,7 +27,7 @@ public sealed class TopicsController : ControllerBase
             _logger.LogWarning("Invalid languageCode: {LanguageCode}", languageCode);
             return BadRequest($"Invalid languageCode: {languageCode}");
         }
-        var topics = await _service.GetTopicsByLanguage(lang);
+        var topics = await _topicService.GetTopicsByLanguage(lang);
         if (topics.Count == 0)
         {
             _logger.LogWarning("No topics found");
@@ -39,7 +39,7 @@ public sealed class TopicsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Response>> Create([FromBody] TopicCreateUpdateDto dto)
     {
-        var result = await _service.CreateAsync(dto);
+        var result = await _topicService.CreateAsync(dto);
         if (!result.Success)
         {
             return BadRequest(result.Message);
@@ -47,7 +47,17 @@ public sealed class TopicsController : ControllerBase
         return Ok(result);
     }
 
-   
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult<Response>> Delete(Guid id)
+    {
+        var result = await _topicService.DeleteAsync(id);
+        if (!result.Success)
+        {
+            return NotFound(result.Message);
+        }
+        return Ok(result);
+    }
+
 }
 
 

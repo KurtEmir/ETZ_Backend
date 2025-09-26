@@ -1,0 +1,47 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">ETZ Admin Portal'ına Hoşgeldiniz</h1>
+</div>
+
+<div class="row g-4 mt-2">
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="stat-card gradient-a">
+            <div class="stat-title">Toplam Sponsor</div>
+            <div class="stat-value" id="statSponsors">0</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="stat-card gradient-b">
+            <div class="stat-title">Toplam Speaker</div>
+            <div class="stat-value" id="statSpeakers">0</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="stat-card gradient-c">
+            <div class="stat-title">Toplam Material</div>
+            <div class="stat-value" id="statMaterials">0</div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const apiBase = window.ETZ_API_BASE || 'http://localhost:5099';
+async function fetchCount(url){ try{ const r=await fetch(url); if(!r.ok) return 0; const d=await r.json(); return Array.isArray(d)?d.length:0; }catch{ return 0; } }
+
+Promise.all([
+  fetchCount(`${apiBase}/api/sponsors?languageCode=TR`),
+  fetchCount(`${apiBase}/api/speakers?languageCode=TR`),
+  fetchCount(`${apiBase}/api/materials?languageCode=TR`)
+]).then(([s,c,m])=>{
+  document.getElementById('statSponsors').textContent = s;
+  document.getElementById('statSpeakers').textContent = c;
+  document.getElementById('statMaterials').textContent = m;
+});
+</script>
+}

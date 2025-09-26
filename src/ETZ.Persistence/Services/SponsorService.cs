@@ -67,6 +67,7 @@ public class SponsorService
             .OrderBy(s => s.DisplayOrder)
             .Select(s => new SponsorInformationDto
             {
+                Id = s.Id,
                 SponsorName = s.Name,
                 SponsorLogoUrl = s.SponsorLogoUrl,
                 DisplayOrder = s.DisplayOrder,
@@ -76,6 +77,29 @@ public class SponsorService
                     .FirstOrDefault() ?? string.Empty
             })
             .ToListAsync();
+    }
+
+    public async Task<Response> DeleteSponsorAsync(Guid id)
+    {
+        var affected = await _context.Sponsors
+            .Where(s => s.Id == id && !s.IsDeleted)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(s => s.IsDeleted, true)
+                .SetProperty(s => s.DeletionTime, DateTimeOffset.UtcNow)
+                .SetProperty(s => s.DeleterUserId, Constants.SystemGodUserId));
+
+        if (affected == 0)
+            return Response.Fail("Sponsor not found");
+
+        // Soft delete child localized types as well
+        await _context.SponsorTypes
+            .Where(t => t.SponsorId == id && !t.IsDeleted)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(t => t.IsDeleted, true)
+                .SetProperty(t => t.DeletionTime, DateTimeOffset.UtcNow)
+                .SetProperty(t => t.DeleterUserId, Constants.SystemGodUserId));
+
+        return Response.Ok("Sponsor deleted");
     }
     
 }

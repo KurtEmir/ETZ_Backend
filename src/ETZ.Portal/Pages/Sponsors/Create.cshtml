@@ -1,0 +1,91 @@
+@page
+@{
+    ViewData["Title"] = "Sponsor Ekle";
+}
+
+<h2 class="mb-4">Sponsor Ekle</h2>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-7">
+        <div class="card-dark">
+            <h5 class="mb-3">Genel Bilgiler</h5>
+            <form id="createForm" class="text-white">
+                <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <input class="form-control" id="name" placeholder="Sponsor adı" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Logo Url</label>
+                    <input class="form-control" id="logo" placeholder="https://..." required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Display Order</label>
+                    <input class="form-control" id="order" type="number" value="0" />
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="card-dark">
+                            <h6 class="mb-3">Türkçe</h6>
+                            <label class="form-label">Type</label>
+                            <input class="form-control" id="typeTr" placeholder="Ana Sponsor" required />
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="card-dark">
+                            <h6 class="mb-3">English</h6>
+                            <label class="form-label">Type</label>
+                            <input class="form-control" id="typeEn" placeholder="Main Sponsor" required />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button class="btn btn-gradient" type="submit">Kaydet</button>
+                    <a class="btn btn-secondary" asp-page="/Sponsors/Index">Vazgeç</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+        <div class="card-dark">
+            <h5 class="mb-3">Örnek Logo</h5>
+            <p class="text-secondary mb-2">Sadece resim URL'si kullanınız.</p>
+            <img id="preview" class="img-fluid rounded" alt="preview" />
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const apiBase = window.ETZ_API_BASE || 'http://localhost:5099';
+const form = document.getElementById('createForm');
+const preview = document.getElementById('preview');
+document.getElementById('logo').addEventListener('input', (e) => preview.src = e.target.value);
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+        name: document.getElementById('name').value.trim(),
+        sponsorLogoUrl: document.getElementById('logo').value.trim(),
+        displayOrder: Number(document.getElementById('order').value || 0),
+        translations: [
+            { languageCode: 'TR', type: document.getElementById('typeTr').value.trim() },
+            { languageCode: 'EN', type: document.getElementById('typeEn').value.trim() }
+        ]
+    };
+    try {
+        const res = await fetch(`${apiBase}/api/sponsors`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        window.location.href = '/Sponsors/Index';
+    } catch (err) {
+        alert('Kaydetme başarısız: ' + err.message);
+    }
+});
+</script>
+}
