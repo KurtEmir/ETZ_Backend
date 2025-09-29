@@ -30,12 +30,19 @@ public class SponsorsController : ControllerBase
         }
 
         var sponsors = await _sponsorService.GetSponsorsByLanguage(lang);
-        if (sponsors.Count == 0)
-        {
-            _logger.LogWarning("No sponsors found");
-            return NotFound("No sponsors found");
-        }
         return Ok(sponsors); 
+    }
+
+    [HttpGet("grouped-by-type")]
+    public async Task<ActionResult<Dictionary<string, List<SponsorListItemDto>>>> GetGroupedSponsors([FromQuery] string languageCode = "tr")
+    {
+        if (!Enum.TryParse<LanguageCode>(languageCode, true, out var lang))
+        {
+            _logger.LogWarning("Invalid languageCode: {LanguageCode}", languageCode);
+            return BadRequest($"Invalid languageCode: {languageCode}");
+        }
+        var grouped = await _sponsorService.GetSponsorsGroupedByTypeAsync(lang);
+        return Ok(grouped);
     }
 
     [HttpPost]
@@ -49,6 +56,16 @@ public class SponsorsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<Response>> UpdateSponsor(Guid id, [FromBody] SponsorCreateUpdateDto dto)
+    {
+        var result = await _sponsorService.UpdateSponsorAsync(id, dto);
+        if (!result.Success)
+        {
+            return BadRequest(result.Message);
+        }
+        return Ok(result);
+    }
 
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult<Response>> DeleteSponsor(Guid id)

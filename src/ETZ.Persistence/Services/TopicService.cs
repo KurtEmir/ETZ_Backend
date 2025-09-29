@@ -23,6 +23,20 @@ public sealed class TopicService
 
     public async Task<Topic?> GetByIdAsync(Guid id)
         => await _context.Topics.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+    public async Task<List<TopicInformationDto>> GetTopicsByLanguage(LanguageCode lang)
+    {
+        return await _context.Topics
+            .AsNoTracking()
+            .Where(t => !t.IsDeleted && t.LanguageCode == lang)
+            .OrderBy(t => t.DisplayOrder)
+            .Select(t => new TopicInformationDto
+            {
+                Id = t.Id,
+                TopicName = t.TopicName,
+                DisplayOrder = t.DisplayOrder
+            })
+            .ToListAsync();
+    }
 
     public async Task<Response> CreateAsync(TopicCreateUpdateDto dto)
     {
@@ -45,46 +59,20 @@ public sealed class TopicService
         _logger.LogInformation("Topic created Id={Id}", entity.Id);
         return Response.Ok("Topic created successfully");
     }
-
-    // public async Task<Response> UpdateAsync(Guid id, TopicCreateUpdateDto dto)
-    // {
-    //     var entity = await _context.Topics.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
-    //     if (entity is null) return Response.Fail("Topic not found");
-    //     entity.DisplayOrder = dto.DisplayOrder;
-    //     entity.LastModifierUserId = Constants.SystemGodUserId;
-    //     entity.LastModificationTime = DateTimeOffset.UtcNow;
-    //     await _context.SaveChangesAsync();
-    //     _logger.LogInformation("Topic updated Id={Id}", id);
-    //     return Response.Ok("Topic updated successfully");
-    // }
-
-    // public async Task<Response> DeleteAsync(Guid id)
-    // {
-    //     var entity = await _context.Topics.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
-    //     if (entity is null) return Response.Fail("Topic not found");
-    //     entity.IsDeleted = true;
-    //     entity.DeleterUserId = Constants.SystemGodUserId;
-    //     entity.DeletionTime = DateTimeOffset.UtcNow;
-    //     await _context.SaveChangesAsync();
-    //     _logger.LogInformation("Topic deleted Id={Id}", id);
-    //     return Response.Ok("Topic deleted successfully");
-    // }
-
-    public async Task<List<TopicInformationDto>> GetTopicsByLanguage(LanguageCode lang)
+    public async Task<Response> UpdateAsync(Guid id, TopicCreateUpdateDto dto)
     {
-        return await _context.Topics
-            .AsNoTracking()
-            .Where(t => !t.IsDeleted && t.LanguageCode == lang)
-            .OrderBy(t => t.DisplayOrder)
-            .Select(t => new TopicInformationDto
-            {
-                Id = t.Id,
-                TopicName = t.TopicName,
-                DisplayOrder = t.DisplayOrder
-            })
-            .ToListAsync();
-    }
+        if (dto == null) return Response.Fail("Payload is required");
 
+        var entity = await _context.Topics.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+        if (entity is null) return Response.Fail("Topic not found");
+        entity.TopicName = dto.TopicName;
+        entity.DisplayOrder = dto.DisplayOrder;
+        entity.LastModifierUserId = Constants.SystemGodUserId;
+        entity.LastModificationTime = DateTimeOffset.UtcNow;
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Topic updated Id={Id}", id);
+        return Response.Ok("Topic updated successfully");
+    }
     public async Task<Response> DeleteAsync(Guid id)
     {
         var topic = _context.Topics.FirstOrDefault(x => x.Id == id && !x.IsDeleted);
@@ -96,6 +84,7 @@ public sealed class TopicService
         _logger.LogInformation("Topic deleted Id={Id}", id);
         return Response.Ok("Topic deleted successfully");
     }
+        
 }
 
 

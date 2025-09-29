@@ -21,14 +21,12 @@ public sealed class MaterialService
         => await _context.Materials.AsNoTracking().Where(x => !x.IsDeleted)
         .Include(x => x.MaterialContents.Where(mc => !mc.IsDeleted))
         .Include(x => x.MaterialPlacements)
-        .Include(x => x.MaterialType)
         .OrderBy(x => x.DisplayOrder).ToListAsync();
 
     public async Task<Material?> GetByIdAsync(Guid id)
-        => await _context.Materials.AsNoTracking().Where(x => !x.IsDeleted && x.Id == id)
+        => await _context.Materials.AsTracking().Where(x => !x.IsDeleted && x.Id == id)
         .Include(x => x.MaterialContents.Where(mc => !mc.IsDeleted))
         .Include(x => x.MaterialPlacements)
-        .Include(x => x.MaterialType)
         .FirstOrDefaultAsync();
 
     public async Task<Response> CreateAsync(MaterialCreateUpdateDto dto)
@@ -122,6 +120,53 @@ public sealed class MaterialService
                 DisplayOrder = m.DisplayOrder
             })
             .ToListAsync();
+    }
+
+    public async Task<Response> UpdateAsync(Guid id, MaterialCreateUpdateDto dto)
+    {
+        if (dto == null) return Response.Fail("Payload is required");
+        var material = await GetByIdAsync(id);
+        if (material is null) return Response.Fail("Material not found");
+
+        material.MaterialName = dto.MaterialName;
+        material.MaterialUrl = dto.MaterialUrl;
+        material.MaterialType = dto.MaterialType;
+        material.DisplayOrder = dto.DisplayOrder ?? 0;
+        material.LastModifierUserId = Constants.SystemGodUserId;
+        material.LastModificationTime = DateTimeOffset.UtcNow;
+        foreach (var t in dto.Translations.GroupBy(t => t.LanguageCode).Select(g => g.First()))
+        {
+            var content = material.MaterialContents.FirstOrDefault(c => c.LanguageCode == t.LanguageCode && !c.IsDeleted);
+            if (content is null) return Response.Fail("Content not found");
+            content.Title = t.Title;
+            content.Description = t.Description;
+            content.LastModifierUserId = Constants.SystemGodUserId;
+            content.LastModificationTime = DateTimeOffset.UtcNow;
+        }
+        // Update or create placement code: take first active placement and change its code,
+        // or create a new placement if none exists
+        var materialPlacement = material.MaterialPlacements.FirstOrDefault(p => !p.IsDeleted);
+        if (materialPlacement is null)
+        {
+            materialPlacement = new MaterialPlacement
+            {
+                MaterialId = material.Id,
+                PlacementCode = dto.PlacementCode,
+                CreationTime = DateTimeOffset.UtcNow,
+                CreatorUserId = Constants.SystemGodUserId,
+                IsDeleted = false
+            };
+            await _context.MaterialPlacements.AddAsync(materialPlacement);
+        }
+        else
+        {
+            materialPlacement.PlacementCode = dto.PlacementCode;
+            materialPlacement.LastModifierUserId = Constants.SystemGodUserId;
+            materialPlacement.LastModificationTime = DateTimeOffset.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+        return Response.Ok("Material updated successfully");
     }
 
     public async Task<Response> DeleteAsync(Guid id)

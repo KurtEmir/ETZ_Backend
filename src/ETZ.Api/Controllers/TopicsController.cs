@@ -20,7 +20,7 @@ public sealed class TopicsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] string languageCode = "tr")
+    public async Task<IActionResult> GetAllTopics([FromQuery] string languageCode = "tr")
     {
         if (!Enum.TryParse<LanguageCode>(languageCode, true, out var lang))
         {
@@ -37,7 +37,7 @@ public sealed class TopicsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Response>> Create([FromBody] TopicCreateUpdateDto dto)
+    public async Task<ActionResult<Response>> CreateTopics([FromBody] TopicCreateUpdateDto dto)
     {
         var result = await _topicService.CreateAsync(dto);
         if (!result.Success)
@@ -47,8 +47,19 @@ public sealed class TopicsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<Response>> UpdateTopics(Guid id, [FromBody] TopicCreateUpdateDto dto)
+    {
+        var result = await _topicService.UpdateAsync(id, dto);
+        if (!result.Success)
+        {
+            return BadRequest(result.Message);
+        }
+        return Ok(result);
+    }
+
     [HttpDelete("{id:guid}")]
-    public async Task<ActionResult<Response>> Delete(Guid id)
+    public async Task<ActionResult<Response>> DeleteTopics(Guid id)
     {
         var result = await _topicService.DeleteAsync(id);
         if (!result.Success)

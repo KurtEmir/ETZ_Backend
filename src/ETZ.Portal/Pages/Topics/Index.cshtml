@@ -58,7 +58,7 @@ async function load() {
                 <td>${t.displayOrder}</td>
                 <td>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-gradient" data-action="edit" data-id="${t.id}">Edit</button>
+                        <a class="btn btn-gradient" href="/Topics/Edit/${t.id}">Edit</a>
                         <button class="btn btn-danger" data-action="delete" data-id="${t.id}">Delete</button>
                     </div>
                 </td>

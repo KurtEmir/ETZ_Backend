@@ -1,0 +1,89 @@
+@page "{id:guid}"
+@{
+    ViewData["Title"] = "Topic Güncelle";
+}
+
+<h2 class="mb-4 text-center gradient-text">Topic Güncelle</h2>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-7">
+        <div class="card-dark">
+            <h5 class="mb-3">Genel Bilgiler</h5>
+            <form id="editForm" class="text-white">
+                <input type="hidden" id="topicId" value="@RouteData.Values["id"]" />
+                <div class="mb-3">
+                    <label class="form-label">Topic Name</label>
+                    <input class="form-control" id="name" placeholder="Konu adı" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Display Order</label>
+                    <input class="form-control" id="order" type="number" value="0" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Language</label>
+                    <select class="form-select" id="lang">
+                        <option value="TR">TR</option>
+                        <option value="EN">EN</option>
+                    </select>
+                </div>
+                <div class="mt-4 d-flex gap-2">
+                    <button class="btn btn-gradient" type="submit">Kaydet</button>
+                    <a class="btn btn-secondary" asp-page="/Topics/Index">Vazgeç</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const apiBase = window.ETZ_API_BASE || 'http://localhost:5099';
+const id = document.getElementById('topicId').value;
+const form = document.getElementById('editForm');
+
+async function loadTopic() {
+    try {
+        const [trRes, enRes] = await Promise.all([
+            fetch(`${apiBase}/api/topics?languageCode=TR`).then(r => r.ok ? r.json() : []).catch(() => []),
+            fetch(`${apiBase}/api/topics?languageCode=EN`).then(r => r.ok ? r.json() : []).catch(() => [])
+        ]);
+        const tr = Array.isArray(trRes) ? trRes.find(x => x.id === id) : null;
+        const en = Array.isArray(enRes) ? enRes.find(x => x.id === id) : null;
+        const data = tr || en;
+        if (!data) {
+            alert('Topic bulunamadı');
+            window.location.href = '/Topics/Index';
+            return;
+        }
+        document.getElementById('name').value = data.topicName || '';
+        document.getElementById('order').value = data.displayOrder ?? 0;
+        document.getElementById('lang').value = tr ? 'TR' : 'EN';
+    } catch (err) {
+        alert('Topic bilgileri yüklenemedi: ' + err.message);
+        window.location.href = '/Topics/Index';
+    }
+}
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+        topicName: document.getElementById('name').value.trim(),
+        displayOrder: Number(document.getElementById('order').value || 0),
+        languageCode: document.getElementById('lang').value
+    };
+    try {
+        const res = await fetch(`${apiBase}/api/topics/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        window.location.href = '/Topics/Index';
+    } catch (err) {
+        alert('Kaydetme başarısız: ' + err.message);
+    }
+});
+
+loadTopic();
+</script>
+}

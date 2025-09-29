@@ -46,6 +46,17 @@ public class MaterialController : ControllerBase
         return Ok(result);
     }
     
+    [HttpPut("{id:guid}")]    
+    public async Task<ActionResult<Response>> Update(Guid id, [FromBody] MaterialCreateUpdateDto dto)
+    {
+        var result = await _materialService.UpdateAsync(id, dto);
+        if (!result.Success)
+        {
+            return BadRequest(result.Message);
+        }
+        return Ok(result);
+    }
+    
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult<Response>> Delete(Guid id)
     {

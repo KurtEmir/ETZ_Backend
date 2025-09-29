@@ -21,8 +21,38 @@ public sealed class SpeakerService
     public async Task<List<Speaker>> GetAllAsync()
         => await _context.Speakers.AsNoTracking().Where(x => !x.IsDeleted).OrderBy(x => x.DisplayOrder).ToListAsync();
 
-    public async Task<Speaker?> GetByIdAsync(Guid id)
-        => await _context.Speakers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+    public async Task<Response> GetByIdAsync(Guid id)
+    {
+        var speaker = await _context.Speakers.AsTracking()
+        .Include(x => x.SpeakerContent)
+        .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+
+        if (speaker is null) return Response.Fail("Speaker not found");
+
+        return Response.Ok("Speaker found");
+    }
+
+    public async Task<List<SpeakerInformationDto>> GetSpeakersByLanguage(LanguageCode lang)
+    {
+        return await _context.Speakers
+        .AsNoTracking()
+        .Where(s => !s.IsDeleted)
+        .OrderBy(s => s.DisplayOrder)
+        .Select(s => new SpeakerInformationDto
+        {
+            Id = s.Id,
+            SpeakerName = s.Name,
+            SpeakerSurname = s.Surname,
+            SpeakerPhotoUrl = s.SpeakerPhotoUrl,
+            SpeakerTitle = s.SpeakerContent
+                .Where(c => c.LanguageCode == lang && !c.IsDeleted)
+                .Select(c => c.Title)
+                .FirstOrDefault() ?? string.Empty,
+            DisplayOrder = s.DisplayOrder,
+                            
+        })
+        .ToListAsync();
+    }
 
     public async Task<Response> CreateAsync(SpeakerCreateUpdateDto dto)
     {
@@ -71,45 +101,6 @@ public sealed class SpeakerService
         return Response.Ok("Speaker created successfully");
     }
 
-    public async Task<Response> UpdateAsync(Guid id, SpeakerCreateUpdateDto dto)
-    {
-        var entity = await _context.Speakers.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
-        if (entity is null) return Response.Fail("Speaker not found");
-
-        entity.Name = dto.Name.Trim();
-        entity.Surname = dto.Surname.Trim();
-        entity.SpeakerPhotoUrl = dto.SpeakerPhotoUrl;
-        entity.DisplayOrder = dto.DisplayOrder;
-        entity.LastModifierUserId = Constants.SystemGodUserId;
-        entity.LastModificationTime = DateTimeOffset.UtcNow;
-
-        await _context.SaveChangesAsync();
-        _logger.LogInformation("Speaker updated Id={Id}", id);
-        return Response.Ok("Speaker updated successfully");
-    }
-
-    public async Task<List<SpeakerInformationDto>> GetSpeakersByLanguage(LanguageCode lang)
-    {
-        return await _context.Speakers
-        .AsNoTracking()
-        .Where(s => !s.IsDeleted)
-        .OrderBy(s => s.DisplayOrder)
-        .Select(s => new SpeakerInformationDto
-        {
-            Id = s.Id,
-            SpeakerName = s.Name,
-            SpeakerSurname = s.Surname,
-            SpeakerPhotoUrl = s.SpeakerPhotoUrl,
-            SpeakerTitle = s.SpeakerContent
-                .Where(c => c.LanguageCode == lang && !c.IsDeleted)
-                .Select(c => c.Title)
-                .FirstOrDefault() ?? string.Empty,
-            DisplayOrder = s.DisplayOrder,
-                            
-        })
-        .ToListAsync();
-    }
-
     public async Task<Response> CreateSpeakerContentAsync(SpeakerContentDto dto)
     {
         if (dto == null)
@@ -128,6 +119,60 @@ public sealed class SpeakerService
         await _context.SaveChangesAsync();
         _logger.LogInformation("SpeakerContent created Id={Id}", speakerContent.Id);
         return Response.Ok("SpeakerContent created successfully");
+    }
+
+    public async Task<Response> UpdateAsync(Guid id, SpeakerCreateUpdateDto dto)
+    {
+        if (dto == null) return Response.Fail("Payload is required");
+
+        var speaker = await _context.Speakers
+            .Include(s => s.SpeakerContent)
+            .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
+
+        if (speaker is null) return Response.Fail("Speaker not found");
+
+        speaker.Name = dto.Name.Trim();
+        speaker.Surname = dto.Surname.Trim();
+        speaker.SpeakerPhotoUrl = dto.SpeakerPhotoUrl;
+        speaker.DisplayOrder = dto.DisplayOrder;
+        speaker.LastModifierUserId = Constants.SystemGodUserId;
+        speaker.LastModificationTime = DateTimeOffset.UtcNow;
+
+        // Upsert translations (TR/EN)
+        if (dto.Translations != null && dto.Translations.Count > 0)
+        {
+            foreach (var tr in dto.Translations.GroupBy(t => t.LanguageCode).Select(g => g.First()))
+            {
+                var existing = speaker.SpeakerContent
+                    .FirstOrDefault(c => c.LanguageCode == tr.LanguageCode && !c.IsDeleted);
+
+                if (existing is null)
+                {
+                    var sc = new SpeakerContent
+                    {
+                        Id = Guid.NewGuid(),
+                        SpeakerId = speaker.Id,
+                        Title = tr.Title,
+                        Description = tr.Description,
+                        LanguageCode = tr.LanguageCode,
+                        CreationTime = DateTimeOffset.UtcNow,
+                        CreatorUserId = Constants.SystemGodUserId
+                    };
+                    await _context.SpeakerContents.AddAsync(sc);
+                }
+                else
+                {
+                    existing.Title = tr.Title;
+                    existing.Description = tr.Description;
+                    existing.LastModifierUserId = Constants.SystemGodUserId;
+                    existing.LastModificationTime = DateTimeOffset.UtcNow;
+                }
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Speaker updated Id={Id}", id);
+        return Response.Ok("Speaker updated successfully");
     }
 
     public async Task<Response> DeleteSpeakerAsync(Guid id)

@@ -20,11 +20,47 @@ public class SponsorService
         _logger = logger;
     }
 
-    // public async Task<List<Sponsor>> GetAllSponsors(Expression<Func<Sponsor, bool>> predicate)
-    // {
-    //     var sponsors = await _context.Sponsors.AsTracking().Where(predicate).ToListAsync();
-    //     return sponsors;
-    // }
+    public async Task<List<SponsorInformationDto>> GetSponsorsByLanguage(LanguageCode lang)
+    {
+        return await _context.Sponsors
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted && s.SponsorTypes.Any(c => c.LanguageCode == lang && !c.IsDeleted))
+            .OrderBy(s => s.DisplayOrder)
+            .Select(s => new SponsorInformationDto
+            {
+                Id = s.Id,
+                SponsorName = s.Name,
+                SponsorLogoUrl = s.SponsorLogoUrl,
+                DisplayOrder = s.DisplayOrder,
+                SponsorTypeName = s.SponsorTypes
+                    .Where(c => c.LanguageCode == lang && !c.IsDeleted)
+                    .Select(c => c.Type)
+                    .FirstOrDefault() ?? string.Empty
+            })
+            .ToListAsync();
+    }
+
+    public async Task<Dictionary<string, List<SponsorListItemDto>>> GetSponsorsGroupedByTypeAsync(LanguageCode lang)
+    {
+        // fetch flat list first
+        var flat = await GetSponsorsByLanguage(lang);
+
+        var grouped = flat
+            // key'i direkt localized type string olarak kullan
+            .GroupBy(x => string.IsNullOrWhiteSpace(x.SponsorTypeName) ? "Unknown" : x.SponsorTypeName.Trim())
+            .ToDictionary(g => g.Key, g => g
+                .OrderBy(i => i.DisplayOrder)
+                .Select(i => new SponsorListItemDto
+                {
+                    SponsorName = i.SponsorName,
+                    SponsorLogoUrl = i.SponsorLogoUrl,
+                    DisplayOrder = i.DisplayOrder
+                })
+                .ToList());
+
+        return grouped;
+    }
+
     public async Task<Response> CreateSponsorAsync(SponsorCreateUpdateDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Name) || string.IsNullOrWhiteSpace(dto.SponsorLogoUrl))
@@ -59,25 +95,6 @@ public class SponsorService
         return Response.Ok("Sponsor created successfully");
     }
 
-    public async Task<List<SponsorInformationDto>> GetSponsorsByLanguage(LanguageCode lang)
-    {
-        return await _context.Sponsors
-            .AsNoTracking()
-            .Where(s => !s.IsDeleted && s.SponsorTypes.Any(c => c.LanguageCode == lang && !c.IsDeleted))
-            .OrderBy(s => s.DisplayOrder)
-            .Select(s => new SponsorInformationDto
-            {
-                Id = s.Id,
-                SponsorName = s.Name,
-                SponsorLogoUrl = s.SponsorLogoUrl,
-                DisplayOrder = s.DisplayOrder,
-                SponsorTypeName = s.SponsorTypes
-                    .Where(c => c.LanguageCode == lang && !c.IsDeleted)
-                    .Select(c => c.Type)
-                    .FirstOrDefault() ?? string.Empty
-            })
-            .ToListAsync();
-    }
 
     public async Task<Response> DeleteSponsorAsync(Guid id)
     {
@@ -102,4 +119,33 @@ public class SponsorService
         return Response.Ok("Sponsor deleted");
     }
     
+    public async Task<Response> UpdateSponsorAsync(Guid id, SponsorCreateUpdateDto dto)
+    {
+        if (dto == null) return Response.Fail("Payload is required");
+
+        var sponsor = await _context.Sponsors
+        .Include(x => x.SponsorTypes)
+        .Where(x => x.Id == id && !x.IsDeleted)
+        .FirstOrDefaultAsync();
+
+        if (sponsor is null) return Response.Fail("Sponsor not found");
+
+        sponsor.Name = dto.Name.Trim();
+        sponsor.SponsorLogoUrl = dto.SponsorLogoUrl.Trim();
+        sponsor.DisplayOrder = dto.DisplayOrder;
+        sponsor.LastModifierUserId = Constants.SystemGodUserId;
+        sponsor.LastModificationTime = DateTimeOffset.UtcNow;
+
+        foreach (var t in dto.Translations.GroupBy(t => t.LanguageCode).Select(g => g.First()))
+        {
+            var content = sponsor.SponsorTypes.FirstOrDefault(c => c.LanguageCode == t.LanguageCode && !c.IsDeleted);
+            if (content is null) return Response.Fail("Content not found");
+            content.Type = t.Type.Trim();
+            content.LastModifierUserId = Constants.SystemGodUserId;
+            content.LastModificationTime = DateTimeOffset.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+        return Response.Ok("Sponsor updated successfully");
+    }
 }

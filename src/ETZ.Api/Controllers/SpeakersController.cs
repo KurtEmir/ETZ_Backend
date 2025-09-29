@@ -19,7 +19,7 @@ public sealed class SpeakersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] string languageCode = "tr")
+    public async Task<IActionResult> GetAllSpeakers([FromQuery] string languageCode = "tr")
     {
          if (!Enum.TryParse<LanguageCode>(languageCode, true, out var lang))
         {
@@ -35,9 +35,19 @@ public sealed class SpeakersController : ControllerBase
         return Ok(speakers);
     }
 
-    
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<Response>> GetSpeaker(Guid id)
+    {
+        var result = await _speakerService.GetByIdAsync(id);
+        if (!result.Success)
+        {
+            return NotFound(result.Message);
+        }
+        return Ok(result);
+    }
+
     [HttpPost]
-    public async Task<ActionResult<Response>> Create([FromBody] SpeakerCreateUpdateDto dto)
+    public async Task<ActionResult<Response>> CreateSpeaker([FromBody] SpeakerCreateUpdateDto dto)
     {
         var result = await _speakerService.CreateAsync(dto);
         if (!result.Success)
@@ -65,6 +75,17 @@ public sealed class SpeakersController : ControllerBase
         if (!result.Success)
         {
             return NotFound(result.Message);
+        }
+        return Ok(result);
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<Response>> UpdateSpeaker(Guid id, [FromBody] SpeakerCreateUpdateDto dto)
+    {
+        var result = await _speakerService.UpdateAsync(id, dto);
+        if (!result.Success)
+        {
+            return BadRequest(result.Message);
         }
         return Ok(result);
     }

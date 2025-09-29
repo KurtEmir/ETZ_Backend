@@ -62,7 +62,7 @@ async function load() {
                 <td>${s.displayOrder}</td>
                 <td>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-gradient" data-action="edit" data-id="${s.id}">Edit</button>
+                        <a class="btn btn-gradient" href="/Speakers/Edit/${s.id}">Edit</a>
                         <button class="btn btn-danger" data-action="delete" data-id="${s.id}">Delete</button>
                     </div>
                 </td>
@@ -72,7 +72,7 @@ async function load() {
     }
 }
 
-// Delete handler (expects DELETE /api/speakers/{id})
+// Delete handler
 tbody.addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
