@@ -10,7 +10,7 @@ public sealed class ETZDbContextFactory : IDesignTimeDbContextFactory<ETZDbConte
     {
         var optionsBuilder = new DbContextOptionsBuilder<ETZDbContext>();
 
-        optionsBuilder.UseNpgsql("Server=localhost,5432;Database=ETZ;User Id=postgres;Password=a.A12345;TrustServerCertificate=True;");
+        optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=ETZ;Username=postgres;Password=a.A12345;");
 
         return new ETZDbContext(optionsBuilder.Options);
     }

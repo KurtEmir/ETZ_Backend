@@ -29,6 +29,33 @@ public sealed class MaterialService
         .Include(x => x.MaterialPlacements)
         .FirstOrDefaultAsync();
 
+    public async Task<Response<MaterialDetailDto>> GetDetailAsync(Guid id)
+    {
+        var m = await _context.Materials.AsNoTracking()
+            .Include(x => x.MaterialContents.Where(c => !c.IsDeleted))
+            .Include(x => x.MaterialPlacements)
+            .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+
+        if (m is null) return Response<MaterialDetailDto>.Fail("Material not found");
+
+        var dto = new MaterialDetailDto
+        {
+            Id = m.Id,
+            MaterialName = m.MaterialName,
+            MaterialUrl = m.MaterialUrl,
+            MaterialType = m.MaterialType,
+            PlacementCode = m.MaterialPlacements.Select(p => p.PlacementCode).FirstOrDefault() ?? string.Empty,
+            DisplayOrder = m.DisplayOrder,
+            Translations = m.MaterialContents.Select(c => new MaterialTranslationDto
+            {
+                LanguageCode = c.LanguageCode,
+                Title = c.Title,
+                Description = c.Description
+            }).ToList()
+        };
+        return Response<MaterialDetailDto>.Ok(dto);
+    }
+
     public async Task<Response> CreateAsync(MaterialCreateUpdateDto dto)
     {
         if (dto == null) return Response.Fail("MaterialCreateUpdateDto is required");
@@ -143,8 +170,7 @@ public sealed class MaterialService
             content.LastModifierUserId = Constants.SystemGodUserId;
             content.LastModificationTime = DateTimeOffset.UtcNow;
         }
-        // Update or create placement code: take first active placement and change its code,
-        // or create a new placement if none exists
+   
         var materialPlacement = material.MaterialPlacements.FirstOrDefault(p => !p.IsDeleted);
         if (materialPlacement is null)
         {

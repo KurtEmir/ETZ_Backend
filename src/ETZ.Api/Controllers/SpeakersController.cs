@@ -36,7 +36,7 @@ public sealed class SpeakersController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<Response>> GetSpeaker(Guid id)
+    public async Task<ActionResult<Response<SpeakerDetailDto>>> GetSpeaker(Guid id)
     {
         var result = await _speakerService.GetByIdAsync(id);
         if (!result.Success)

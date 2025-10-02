@@ -1,28 +1,36 @@
 @page "{id:guid}"
 @{
-    ViewData["Title"] = "Speaker Güncelle";
+    ViewData["Title"] = "Material Güncelle";
 }
 
-<h2 class="mb-4 text-center gradient-text">Speaker Güncelle</h2>
+<h2 class="mb-4 text-center gradient-text">Material Güncelle</h2>
 
 <div class="row g-4">
     <div class="col-12 col-lg-7">
         <div class="card-dark">
             <h5 class="mb-3">Genel Bilgiler</h5>
             <form id="editForm" class="text-white">
-                <input type="hidden" id="speakerId" value="@RouteData.Values["id"]" />
+                <input type="hidden" id="materialId" value="@RouteData.Values["id"]" />
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Name</label>
-                        <input class="form-control" id="name" required />
+                        <input class="form-control" id="name" />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Surname</label>
-                        <input class="form-control" id="surname" required />
+                        <label class="form-label">URL</label>
+                        <input class="form-control" id="url" placeholder="https://..." required />
                     </div>
-                    <div class="col-12">
-                        <label class="form-label">Photo Url</label>
-                        <input class="form-control" id="photo" placeholder="https://..." required />
+                    <div class="col-md-4">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" id="type">
+                            <option value="0">Video</option>
+                            <option value="1">Document</option>
+                            <option value="2">Image</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Placement Code</label>
+                        <input class="form-control" id="placement" />
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Display Order</label>
@@ -35,7 +43,7 @@
                         <div class="card-dark">
                             <h6 class="mb-3">Türkçe</h6>
                             <label class="form-label">Title</label>
-                            <input class="form-control" id="titleTr" placeholder="Ünvan (TR)" />
+                            <input class="form-control" id="titleTr" placeholder="Başlık (TR)" />
                             <label class="form-label mt-2">Description</label>
                             <textarea class="form-control" id="descTr" rows="3" placeholder="Açıklama (TR)"></textarea>
                         </div>
@@ -53,7 +61,7 @@
 
                 <div class="mt-4 d-flex gap-2">
                     <button class="btn btn-gradient" type="submit">Güncelle</button>
-                    <a class="btn btn-secondary" asp-page="/Speakers/Index">Vazgeç</a>
+                    <a class="btn btn-secondary" asp-page="/Materials/Index">Vazgeç</a>
                 </div>
             </form>
         </div>
@@ -62,7 +70,7 @@
     <div class="col-12 col-lg-5">
         <div class="card-dark">
             <h5 class="mb-3">Önizleme</h5>
-            <img id="preview" class="img-fluid rounded" alt="preview" />
+            <a id="previewLink" href="#" target="_blank">Bağlantıyı Aç</a>
         </div>
     </div>
 </div>
@@ -70,55 +78,58 @@
 @section Scripts {
 <script>
 const apiBase = window.ETZ_API_BASE || 'http://localhost:5099';
-const id = document.getElementById('speakerId').value;
-const preview = document.getElementById('preview');
+const id = document.getElementById('materialId').value;
+const previewLink = document.getElementById('previewLink');
 
-document.getElementById('photo').addEventListener('input', (e) => preview.src = e.target.value);
+function toCode(v){ return (v ?? '').toString().toUpperCase(); }
+// Map API enum value ("Image"|"Video"|"Link" or 0/1/2) to select numeric value
+const enumMap = { IMAGE: 0, VIDEO: 1, LINK: 2 };
+function toTypeValue(v){
+  const s = (v ?? '').toString();
+  const num = Number(s);
+  if (!Number.isNaN(num)) return num; // already numeric
+  return enumMap[toCode(s)] ?? 0;
+}
 
-// basit ön-doldurma: TR dilini çekip alanlara koyma (başlık/desc için kullanıcı düzenler)
-// Detay ucu ile doldur (adı, soyadı, foto, order ve TR/EN title/description)
-fetch(`${apiBase}/api/speakers/${id}`)
+fetch(`${apiBase}/api/materials/${id}`)
   .then(r => r.json())
-  .then(resp => {
-    const d = resp?.data || resp; // Response<T> veya direkt DTO olabilir
-    if (!d) return;
-    document.getElementById('name').value = d.name || '';
-    document.getElementById('surname').value = d.surname || '';
-    document.getElementById('photo').value = d.speakerPhotoUrl || '';
-    preview.src = d.speakerPhotoUrl || '';
-    document.getElementById('order').value = d.displayOrder || 0;
-    const toCode = v => (v ?? '').toString().toUpperCase();
-    const tr = (d.translations || []).find(x => toCode(x.languageCode) === 'TR');
-    const en = (d.translations || []).find(x => toCode(x.languageCode) === 'EN');
+  .then(d => {
+    // API iki şekilde dönebilir: { data: {...} } veya direkt dto
+    const m = d?.data || d;
+    if(!m) return;
+    document.getElementById('name').value = m.materialName || '';
+    document.getElementById('url').value = m.materialUrl || '';
+    previewLink.href = m.materialUrl || '#';
+    document.getElementById('type').value = String(toTypeValue(m.materialType));
+    document.getElementById('placement').value = m.placementCode || '';
+    document.getElementById('order').value = m.displayOrder ?? 0;
+    const tr = (m.translations || []).find(x => toCode(x.languageCode) === 'TR');
+    const en = (m.translations || []).find(x => toCode(x.languageCode) === 'EN');
     if (tr) { document.getElementById('titleTr').value = tr.title || ''; document.getElementById('descTr').value = tr.description || ''; }
     if (en) { document.getElementById('titleEn').value = en.title || ''; document.getElementById('descEn').value = en.description || ''; }
-  })
-  .catch(()=>{});
+  }).catch(()=>{});
 
 const form = document.getElementById('editForm');
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const payload = {
-    name: document.getElementById('name').value.trim(),
-    surname: document.getElementById('surname').value.trim(),
-    speakerPhotoUrl: document.getElementById('photo').value.trim(),
+    materialName: document.getElementById('name').value.trim(),
+    materialUrl: document.getElementById('url').value.trim(),
+    materialType: Number(document.getElementById('type').value),
+    placementCode: document.getElementById('placement').value.trim(),
     displayOrder: Number(document.getElementById('order').value || 0),
     translations: [
       { languageCode: 'TR', title: document.getElementById('titleTr').value.trim(), description: document.getElementById('descTr').value.trim() },
       { languageCode: 'EN', title: document.getElementById('titleEn').value.trim(), description: document.getElementById('descEn').value.trim() }
     ]
   };
-  try {
-    const res = await fetch(`${apiBase}/api/speakers/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    window.location.href = '/Speakers/Index';
-  } catch (err) {
-    alert('Güncelleme başarısız: ' + err.message);
-  }
+  try{
+    const res = await fetch(`${apiBase}/api/materials/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    window.location.href = '/Materials/Index';
+  }catch(err){ alert('Güncelleme başarısız: ' + err.message); }
 });
 </script>
 }
+
+

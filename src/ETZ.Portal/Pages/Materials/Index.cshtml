@@ -79,6 +79,10 @@ tbody.addEventListener('click', (e) => {
     if (!btn) return;
     const action = btn.getAttribute('data-action');
     const id = btn.getAttribute('data-id');
+    if (action === 'edit') {
+        window.location.href = `/Materials/Edit/${id}`;
+        return;
+    }
     if (action === 'delete') {
         if (!confirm('Silmek istediğine emin misin?')) return;
         fetch(`${apiBase}/api/materials/${id}`, { method: 'DELETE' })

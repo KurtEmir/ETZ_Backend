@@ -34,6 +34,17 @@ public class MaterialController : ControllerBase
         }
         return Ok(materials);
     }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<Response<MaterialDetailDto>>> GetById(Guid id)
+    {
+        var result = await _materialService.GetDetailAsync(id);
+        if (!result.Success)
+        {
+            return NotFound(result.Message);
+        }
+        return Ok(result);
+    }
     
     [HttpPost]
     public async Task<ActionResult<Response>> Create([FromBody] MaterialCreateUpdateDto dto)
@@ -67,5 +78,6 @@ public class MaterialController : ControllerBase
         }
         return Ok(result);
     }
+    
     
 }

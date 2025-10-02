@@ -21,15 +21,33 @@ public sealed class SpeakerService
     public async Task<List<Speaker>> GetAllAsync()
         => await _context.Speakers.AsNoTracking().Where(x => !x.IsDeleted).OrderBy(x => x.DisplayOrder).ToListAsync();
 
-    public async Task<Response> GetByIdAsync(Guid id)
+    public async Task<Response<SpeakerDetailDto>> GetByIdAsync(Guid id)
     {
-        var speaker = await _context.Speakers.AsTracking()
-        .Include(x => x.SpeakerContent)
-        .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+        var speaker = await _context.Speakers.AsNoTracking()
+            .Include(x => x.SpeakerContent)
+            .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
 
-        if (speaker is null) return Response.Fail("Speaker not found");
+        if (speaker is null)
+            return Response<SpeakerDetailDto>.Fail("Speaker not found");
 
-        return Response.Ok("Speaker found");
+        var dto = new SpeakerDetailDto
+        {
+            Id = speaker.Id,
+            Name = speaker.Name,
+            Surname = speaker.Surname,
+            SpeakerPhotoUrl = speaker.SpeakerPhotoUrl,
+            DisplayOrder = speaker.DisplayOrder,
+            Translations = speaker.SpeakerContent
+                .Where(c => !c.IsDeleted)
+                .Select(c => new SpeakerTranslationDto
+                {
+                    LanguageCode = c.LanguageCode,
+                    Title = c.Title,
+                    Description = c.Description
+                }).ToList()
+        };
+
+        return Response<SpeakerDetailDto>.Ok(dto, "Speaker found");
     }
 
     public async Task<List<SpeakerInformationDto>> GetSpeakersByLanguage(LanguageCode lang)
